@@ -1,13 +1,13 @@
 # Event
-Event is a publishing / subscribing event system based off the [publish-subscribe pattern](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern)
+Event is a publishing / subscribing event api based off the [publish-subscribe pattern](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern).
 
 ## Why event?
 
-Event is fully optimized for any implementation, with support for events to be fired on different threads
+Event is fully optimized for any implementation, with support for events to be fired on different threads.
 
 ## Examples
 
-### Setup a bus:
+### Setting up a bus
 ```java
 EventBus<ExampleEvent> bus = EventBus.of(ExampleEvent.class);
 ```
@@ -24,7 +24,7 @@ public static class ExampleEvent {
 }
 ```
 
-### Register a handler:
+### Register a handler
 
 ```java
 // Using java 8's lambdas

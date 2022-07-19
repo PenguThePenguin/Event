@@ -24,9 +24,11 @@
 
 package me.pengu.event;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 // I would just use a consumer but that doesn't handle exceptions.
 public interface EventHandler<E> {
 
-    void handle(E event) throws Throwable;
+    void handle(@NonNull E event) throws Throwable;
 
 }
