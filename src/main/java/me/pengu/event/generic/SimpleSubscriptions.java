@@ -1,5 +1,5 @@
 /*
- * This file is part of bCore, licensed under the MIT License.
+ * This file is part of Event, licensed under the MIT License.
  *
  * Copyright (c) pengu
  *
@@ -62,7 +62,7 @@ public class SimpleSubscriptions<E> implements Subscriptions<E> {
             entries.addAll(entry.getValue());
         }
 
-        entries.sort(SimpleSubscription.SUBSCRIPTION_COMPARATOR);
+        entries.sort(Subscription.SUBSCRIPTION_COMPARATOR);
         this.subscriptions = entries.toArray(new Subscription[0]);
     }
 

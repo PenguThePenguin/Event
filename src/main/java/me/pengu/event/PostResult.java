@@ -1,5 +1,5 @@
 /*
- * This file is part of bCore, licensed under the MIT License.
+ * This file is part of Event, licensed under the MIT License.
  *
  * Copyright (c) pengu
  *
