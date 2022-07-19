@@ -25,6 +25,7 @@
 package me.pengu.event;
 
 import me.pengu.event.data.Cancellable;
+import me.pengu.event.data.Subscribe;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.junit.jupiter.api.Test;
 
@@ -53,9 +54,23 @@ class EventBusTest {
         assertEquals(1, testEvent.count);
     }
 
+    @Test
+    void testMethodSubscribers() {
+        EventBus<TestEvent> bus = EventBus.of(TestEvent.class);
+        assertNull(bus.getSubscriptions(TestEvent.class));
+
+        bus.register(new TestSubscriber());
+        assertTrue(bus.isSubscribed(TestEvent.class));
+
+        TestEvent testEvent = new TestEvent();
+        bus.post(testEvent).thenAccept(result -> assertTrue(result.wasSuccessful()));
+        assertEquals(1, testEvent.count);
+    }
+
+    @Test
     void testCancellableEvents() {
         EventBus<TestEvent> bus = EventBus.of(TestEvent.class);
-        assertEquals(0, bus.getSubscriptions(TestEvent.class).length);
+        assertNull(bus.getSubscriptions(TestEvent.class));
 
         bus.register(TestEvent.class, (Subscription<TestEvent>) event -> event.count++);
         assertTrue(bus.isSubscribed(TestEvent.class));
@@ -82,5 +97,13 @@ class EventBusTest {
 
     }
 
+    public static class TestSubscriber {
+
+        @Subscribe(order = 1)
+        private void onTestEvent(TestEvent event) {
+            event.count++;
+        }
+
+    }
 
 }

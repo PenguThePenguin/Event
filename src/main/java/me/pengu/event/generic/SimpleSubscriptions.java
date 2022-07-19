@@ -55,7 +55,7 @@ public class SimpleSubscriptions<E> implements Subscriptions<E> {
         return subscriptions;
     }
 
-    @SuppressWarnings({"unchecked", "SuspiciousToArrayCall"})
+    @SuppressWarnings({"unchecked"})
     public synchronized void refreshSubscriptions() {
         List<Subscription<E>> entries = new ArrayList<>();
         for (Map.Entry<Integer, List<Subscription<E>>> entry : this.subscriptionCache.entrySet()) {
@@ -63,7 +63,7 @@ public class SimpleSubscriptions<E> implements Subscriptions<E> {
         }
 
         entries.sort(SimpleSubscription.SUBSCRIPTION_COMPARATOR);
-        this.subscriptions = entries.toArray(new SimpleSubscription[0]);
+        this.subscriptions = entries.toArray(new Subscription[0]);
     }
 
     @Override

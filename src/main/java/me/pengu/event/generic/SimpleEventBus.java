@@ -64,6 +64,8 @@ public class SimpleEventBus<E> implements EventBus<E> {
         List<SimpleSubscription<E>> subscriptions = new ArrayList<>();
 
         for (Method method : listener.getClass().getDeclaredMethods()) {
+            method.setAccessible(true);
+
             if (method.isAnnotationPresent(Subscribe.class)) {
                 Class<?>[] parameters = method.getParameterTypes();
                 Preconditions.checkArgument(parameters.length == 1,
@@ -124,7 +126,8 @@ public class SimpleEventBus<E> implements EventBus<E> {
 
         return CompletableFuture.completedFuture(exceptions == null
                 ? PostResult.of(event)
-                : PostResult.of(event, exceptions.build()));
+                : PostResult.of(event, exceptions.build())
+        );
     }
 
     @Override
