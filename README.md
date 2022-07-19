@@ -15,8 +15,8 @@ EventBus<ExampleEvent> bus = EventBus.of(ExampleEvent.class);
 
 ### Create an event
 
-This is the base event you can extend
-###### You can also intercept event posting using by implementing Cancellable or using a custom bus Acceptor
+This is a base event you can extend for different actions
+###### You can also intercept event posting by implementing Cancellable or using a custom bus Acceptor
 
 ```java
 public static class ExampleEvent {
@@ -32,7 +32,7 @@ bus.register(ExampleEvent.class, (EventHandler<ExampleEvent>) event -> {
     System.out.println("Hey!");
 });
 
-// Using java 7
+// Using regular java
 bus.register(ExampleEvent.class, new EventHandler<ExampleEvent>() {
     @Override
     public void handle(ExampleEvent event) throws Throwable {
