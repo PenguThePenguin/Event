@@ -82,15 +82,11 @@ public class SimpleEventBus<E> implements EventBus<E> {
                                 "Subscriber methods must only have 1 parameter.", method, parameters.length
                 );
 
-                System.out.println("Registering " + method);
-
                 Class<?> eventType = parameters[0];
                 if (!eventType.isAssignableFrom(this.eventType)) continue;
 
                 Class<? extends E> event = eventType.asSubclass(this.eventType);
                 Subscribe subscribe = method.getAnnotation(Subscribe.class);
-
-                System.out.println("Ending registration " + method);
 
                 subscriptions.add(
                         new SimpleSubscription<>(subscribe.order(), this, event, subscriber, method)
