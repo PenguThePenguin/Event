@@ -59,44 +59,65 @@ public class SimpleEventBus<E> implements EventBus<E> {
     }
 
     /**
+     * Registers all of a {@link Class}'s static methods that are annotated with @{@link Subscribe}.
+     *
+     * @param subscriber the subscriber to register
+     */
+    @Override
+    public void register(@NonNull Class<?> subscriber) {
+        for (Method method : subscriber.getMethods()) {
+            SimpleSubscription<E> subscription = this.generateSubscription(method, subscriber);
+
+            if (subscription != null) {
+                this.register(subscription.getEventClass(), subscription);
+            }
+        }
+    }
+
+    /**
      * Registers all of a {@link Object}'s methods that are annotated with @{@link Subscribe}.
      *
      * @param subscriber the subscriber to register
      */
     @Override
     public void register(@NonNull Object subscriber) {
-        List<SimpleSubscription<E>> subscriptions = new ArrayList<>();
-
-        // fetching all public / private methods
-        Set<Method> methods = new HashSet<>();
+        Set<Method> methods = new HashSet<>(); // fetching all public / private methods
         methods.addAll(Arrays.asList(subscriber.getClass().getMethods()));
         methods.addAll(Arrays.asList(subscriber.getClass().getDeclaredMethods()));
 
         for (Method method : methods) {
-            method.setAccessible(true);
+            SimpleSubscription<E> subscription = this.generateSubscription(method, subscriber);
 
-            if (method.isAnnotationPresent(Subscribe.class)) {
-                Class<?>[] parameters = method.getParameterTypes();
-                Preconditions.checkArgument(parameters.length == 1,
-                        "Method %s has @Subscribe annotation but has %s parameters." +
-                                "Subscriber methods must only have 1 parameter.", method, parameters.length
-                );
-
-                Class<?> eventType = parameters[0];
-                if (!eventType.isAssignableFrom(this.eventType)) continue;
-
-                Class<? extends E> event = eventType.asSubclass(this.eventType);
-                Subscribe subscribe = method.getAnnotation(Subscribe.class);
-
-                subscriptions.add(
-                        new SimpleSubscription<>(subscribe.order(), this, event, subscriber, method, subscribe.acceptsCancelled())
-                );
+            if (subscription != null) {
+                this.register(subscription.getEventClass(), subscription);
             }
         }
+    }
 
-        for (SimpleSubscription<E> subscription : subscriptions) {
-            this.register(subscription.getEventClass(), subscription);
-        }
+    /**
+     * Generates a subscription based off a method, and it's containing class.
+     *
+     * @param method the method that is annotated with @Subscribe
+     * @param target the object that contains the method that will be invoked when the event is fired.
+     * @return the generated {@link SimpleSubscription}.
+     */
+    public SimpleSubscription<E> generateSubscription(Method method, Object target) {
+        method.setAccessible(true);
+        if (!method.isAnnotationPresent(Subscribe.class)) return null;
+
+        Class<?>[] parameters = method.getParameterTypes();
+        Preconditions.checkArgument(parameters.length == 1,
+                "Method %s has @Subscribe annotation but has %s parameters." +
+                        "Subscriber methods must only have 1 parameter.", method, parameters.length
+        );
+
+        Class<?> eventType = parameters[0];
+        if (!eventType.isAssignableFrom(this.eventType)) return null;
+
+        Class<? extends E> event = eventType.asSubclass(this.eventType);
+        Subscribe subscribe = method.getAnnotation(Subscribe.class);
+
+        return new SimpleSubscription<>(subscribe.order(), this, event, target, method, subscribe.acceptsCancelled());
     }
 
     /**

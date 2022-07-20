@@ -65,6 +65,10 @@ class EventBusTest {
         TestEvent testEvent = new TestEvent();
         bus.post(testEvent).thenAccept(result -> assertTrue(result.wasSuccessful()));
         assertEquals(2, testEvent.count);
+
+        bus.register(TestStaticSubscriber.class);
+        bus.post(testEvent).thenAccept(result -> assertTrue(result.wasSuccessful()));
+        assertEquals(4, testEvent.count);
     }
 
     @Test
@@ -106,6 +110,15 @@ class EventBusTest {
 
         @Subscribe(order = 2, acceptsCancelled = false)
         private void onTestEventNonCancellable(TestEvent event) {
+            event.count++;
+        }
+
+    }
+
+    public static class TestStaticSubscriber {
+
+        @Subscribe
+        private static void onTestStatic(TestEvent event) {
             event.count++;
         }
 

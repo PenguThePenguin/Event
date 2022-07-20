@@ -74,6 +74,13 @@ public interface EventBus<E> extends AutoCloseable {
     @NonNull Map<Class<? extends E>, Subscriptions<E>> getSubscriptions();
 
     /**
+     * Registers all of a {@link Class}'s static methods that are annotated with @{@link Subscribe}.
+     *
+     * @param subscriber the subscriber to register
+     */
+    void register(@NonNull Class<?> subscriber);
+
+    /**
      * Registers all of a {@link Object}'s methods that are annotated with @{@link Subscribe}.
      *
      * @param subscriber the subscriber to register
