@@ -36,6 +36,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
@@ -117,7 +118,10 @@ public class SimpleEventBus<E> implements EventBus<E> {
         Class<? extends E> event = eventType.asSubclass(this.eventType);
         Subscribe subscribe = method.getAnnotation(Subscribe.class);
 
-        return new SimpleSubscription<>(subscribe.order(), this, event, target, method, subscribe.acceptsCancelled());
+        return new SimpleSubscription<>(
+                subscribe.order(), this, event, Modifier.isStatic(method.getModifiers())
+                ? null : target, method, subscribe.acceptsCancelled()
+        );
     }
 
     /**
