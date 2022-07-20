@@ -24,15 +24,26 @@
 
 package me.pengu.event.data;
 
+import me.pengu.event.Subscription;
+import me.pengu.event.Subscriptions;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * An annotation to mark a method to be registered into a {@link Subscription}.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Subscribe {
 
+    /**
+     * The subscriptions order.
+     *
+     * @return the order in which this will be handled.
+     */
     int order() default PostOrder.NORMAL;
 
 }

@@ -30,17 +30,38 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public interface Cancellable {
 
+    /**
+     * Returns the events current cancellation state
+     *
+     * @return an atomic boolean to maintain concurrency.
+     */
     @NonNull AtomicBoolean getCancellationState();
 
+    /**
+     * Returns if the event was cancelled
+     *
+     * @return {@code true} if the event was cancelled, {@code false} otherwise.
+     */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     default boolean isCancelled() {
         return this.getCancellationState().get();
     }
 
-    default boolean isNotCancelled() {
+   /**
+     * Returns if the event is not cancelled.
+     *
+     * @return {@code true} if the event wasn't cancelled, {@code false} otherwise.
+     */
+     default boolean isNotCancelled() {
         return !this.isCancelled();
     }
 
+    /**
+     * Sets the cancellation state
+     *
+     * @param cancelled The new cancellation state.
+     * @return The previous value of the cancellation state.
+     */
     default boolean setCancelled(boolean cancelled) {
         return this.getCancellationState().getAndSet(cancelled);
     }

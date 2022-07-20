@@ -31,58 +31,101 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Predicate;
 
 public class SimpleSubscriptions<E> implements Subscriptions<E> {
 
-    private Subscription<E>[] subscriptions = null;
-    private final Map<Integer, List<Subscription<E>>> subscriptionCache;
+    private Subscription<E>[] registeredSubscriptions = null;
+    private final Map<Integer, List<Subscription<E>>> subscriptions;
 
     public SimpleSubscriptions() {
-        this.subscriptionCache = Maps.newConcurrentMap();
+        this.subscriptions = Maps.newConcurrentMap();
     }
 
+    /**
+     * Geta all subscriptions, by their priority.
+     *
+     * @return a {@link Map} of subscriptions.
+     */
     @Override
     public @NonNull Map<Integer, List<Subscription<E>>> getSubscriptions() {
-        return this.subscriptionCache;
+        return this.subscriptions;
     }
 
+    /**
+     * Gets all registered subscriptions in an array for quick iteration.
+     *
+     * @return an array of subscriptions.
+     */
     @Override
     public @NonNull Subscription<E>[] getRegisteredSubscriptions() {
         Subscription<E>[] subscriptions;
-        while((subscriptions = this.subscriptions) == null) this.refreshSubscriptions();
+        while((subscriptions = this.registeredSubscriptions) == null) {
+            this.refreshSubscriptions();
+        }
+
         return subscriptions;
     }
 
+    /**
+     * Refresh currently registered subscriptions
+     */
     @SuppressWarnings({"unchecked"})
     public synchronized void refreshSubscriptions() {
         List<Subscription<E>> entries = new ArrayList<>();
-        for (Map.Entry<Integer, List<Subscription<E>>> entry : this.subscriptionCache.entrySet()) {
+        for (Entry<Integer, List<Subscription<E>>> entry : this.subscriptions.entrySet()) {
             entries.addAll(entry.getValue());
         }
 
         entries.sort(Subscription.SUBSCRIPTION_COMPARATOR);
-        this.subscriptions = entries.toArray(new Subscription[0]);
+        this.registeredSubscriptions = entries.toArray(new Subscription[0]);
     }
 
+    /**
+     * Register a subscription to this event type.
+     *
+     * @param subscription the subscription to register.
+     */
     @Override
-    public void register(Subscription<E> subscription) {
-        this.subscriptionCache.computeIfAbsent(subscription.getOrder(), integer -> new ArrayList<>()).add(subscription);
+    public synchronized void register(Subscription<E> subscription) {
+        this.subscriptions.computeIfAbsent(subscription.getOrder(), integer -> new ArrayList<>()).add(subscription);
         this.refreshSubscriptions();
     }
 
+    /**
+     * Unregister a subscription from this event type.
+     *
+     * @param subscription the subscription to unregister.
+     */
     @Override
-    public void unregister(@NonNull Subscription<E> subscription) {
+    public synchronized void unregister(@NonNull Subscription<E> subscription) {
         this.unregisterIf(sub -> sub == subscription);
     }
 
+    /**
+     * Unregister all subscriptions that match the given predicate
+     *
+     * @param predicate a predicate to check the subscription should be unregistered.
+     */
     @Override
-    public void unregisterIf(@NonNull Predicate<? super Subscription<E>> predicate) {
-        this.subscriptionCache.forEach((key, value) -> value.stream().filter(predicate).forEach(subscription -> {
-            this.subscriptionCache.remove(key);
+    public synchronized void unregisterIf(@NonNull Predicate<? super Subscription<E>> predicate) {
+        boolean changed = false;
+
+        for (List<Subscription<E>> subscriptions : this.subscriptions.values()) {
+            for (ListIterator<Subscription<E>> iterator = subscriptions.listIterator(); iterator.hasNext(); ) {
+                if (predicate.test(iterator.next())) {
+                    iterator.remove();
+                    changed = true;
+                }
+            }
+        }
+
+        if (changed) {
             this.refreshSubscriptions();
-        }));
+        }
     }
 
 }

@@ -34,10 +34,9 @@ import me.pengu.event.data.Subscribe;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
@@ -59,11 +58,21 @@ public class SimpleEventBus<E> implements EventBus<E> {
         this.subscriptions = Maps.newConcurrentMap();
     }
 
+    /**
+     * Registers all of a {@link Object}'s methods that are annotated with @{@link Subscribe}.
+     *
+     * @param subscriber the subscriber to register
+     */
     @Override
-    public void register(@NonNull Object listener) {
+    public void register(@NonNull Object subscriber) {
         List<SimpleSubscription<E>> subscriptions = new ArrayList<>();
 
-        for (Method method : listener.getClass().getDeclaredMethods()) {
+        // fetching all public / private methods
+        Set<Method> methods = new HashSet<>();
+        methods.addAll(Arrays.asList(subscriber.getClass().getMethods()));
+        methods.addAll(Arrays.asList(subscriber.getClass().getDeclaredMethods()));
+
+        for (Method method : methods) {
             method.setAccessible(true);
 
             if (method.isAnnotationPresent(Subscribe.class)) {
@@ -73,14 +82,18 @@ public class SimpleEventBus<E> implements EventBus<E> {
                                 "Subscriber methods must only have 1 parameter.", method, parameters.length
                 );
 
-                Subscribe subscribe = method.getAnnotation(Subscribe.class);
-                Class<?> eventType = method.getParameterTypes()[0];
+                System.out.println("Registering " + method);
 
+                Class<?> eventType = parameters[0];
                 if (!eventType.isAssignableFrom(this.eventType)) continue;
+
                 Class<? extends E> event = eventType.asSubclass(this.eventType);
+                Subscribe subscribe = method.getAnnotation(Subscribe.class);
+
+                System.out.println("Ending registration " + method);
 
                 subscriptions.add(
-                        new SimpleSubscription<>(subscribe.order(), this, event, listener, method)
+                        new SimpleSubscription<>(subscribe.order(), this, event, subscriber, method)
                 );
             }
         }
@@ -90,6 +103,14 @@ public class SimpleEventBus<E> implements EventBus<E> {
         }
     }
 
+    /**
+     * Registers an event handler with a given post order.
+     *
+     * @param eventType the type of event to subscribe to.
+     * @param handler   the handler to be registered.
+     * @param order     the order in which the handler should be called.
+     * @return the subscription that was generated.
+     */
     @Override
     public @NonNull SimpleSubscription<E> register(@NonNull Class<? extends E> eventType, @NonNull EventHandler<? super E> handler, int order) {
         SimpleSubscription<E> subscription = new SimpleSubscription<>(order, this, eventType, handler);
@@ -98,6 +119,12 @@ public class SimpleEventBus<E> implements EventBus<E> {
         return subscription;
     }
 
+    /**
+     * Register a subscription for a specific event type.
+     *
+     * @param eventType    the type of event that the subscription is interested in.
+     * @param subscription the subscription to register.
+     */
     @Override
     public void register(@NonNull Class<? extends E> eventType, @NonNull Subscription<E> subscription) {
         Preconditions.checkState(eventType.isAssignableFrom(this.eventType),
@@ -107,21 +134,33 @@ public class SimpleEventBus<E> implements EventBus<E> {
         this.subscriptions.computeIfAbsent(eventType, clazz -> new SimpleSubscriptions<>()).register(subscription);
     }
 
+    /**
+     * Post an event to all registered subscriptions.
+     *
+     * @param event the event to post.
+     * @return a CompletableFuture encapsulating its PostResult.
+     */
     @Override
     public @NonNull <T extends E> CompletableFuture<PostResult<? super T>> post(@NonNull E event) {
         ImmutableMap.Builder<Subscription<? super E>, Throwable> exceptions = null;
 
-        for (Subscription<? super E> subscription : this.getSubscriptions(event.getClass())) {
-            if (subscription != null && this.acceptor.accepts(eventType, event, subscription)) {
+        Subscription<? super E>[] subscriptions = this.getSubscriptions(event.getClass());
+        if (subscriptions != null) {
+
+            for (Subscription<? super E> subscription : subscriptions) {
+                if (subscription == null || !this.acceptor.accepts(eventType, event, subscription)) continue;
+
                 try {
                     subscription.on(event);
                 } catch (Throwable e) {
                     if (exceptions == null) {
                         exceptions = ImmutableMap.builder();
                     }
+
                     exceptions.put(subscription, e);
                 }
             }
+
         }
 
         return CompletableFuture.completedFuture(exceptions == null
@@ -130,11 +169,21 @@ public class SimpleEventBus<E> implements EventBus<E> {
         );
     }
 
+    /**
+     * Unregister a subscription from the event bus.
+     *
+     * @param subscription the subscription to unregister.
+     */
     @Override
     public void unregister(@NonNull Subscription<E> subscription) {
         this.unregisterIf(sub -> sub == subscription);
     }
 
+    /**
+     * Unregister all subscriptions that match the given {@link Predicate}
+     *
+     * @param predicate the predicate to test the subscription should be removed.
+     */
     @Override
     public void unregisterIf(@NonNull Predicate<? super Subscription<E>> predicate) {
         for (Subscriptions<E> subscription : this.subscriptions.values()) {
@@ -142,19 +191,32 @@ public class SimpleEventBus<E> implements EventBus<E> {
         }
     }
 
+    /**
+     * Unregister all the registered subscriptions.
+     */
     @Override
     public void unregisterAll() {
         this.subscriptions.clear();
     }
 
+    /**
+     * Gets an {@link Array} of all registered {@link Subscription}'s based on its event type.
+     *
+     * @param eventType the type of event.
+     * @return All registered subscriptions.
+     */
     @Override
     public @Nullable Subscription<? super E>[] getSubscriptions(@NonNull Class<?> eventType) {
         Subscriptions<E> subscriptions = this.subscriptions.get(eventType);
-        if (subscriptions == null) return null;
-
-        return subscriptions.getRegisteredSubscriptions();
+        return subscriptions == null ? null : subscriptions.getRegisteredSubscriptions();
     }
 
+    /**
+     * Returns if the given event type is currently subscribed to.
+     *
+     * @param eventType The type of event you want to check is subscribed.
+     * @return if the event is subscribed.
+     */
     @Override
     public boolean isSubscribed(@NonNull Class<?> eventType) {
         Subscription<? super E>[] subscriptions = this.getSubscriptions(eventType);

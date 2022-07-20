@@ -53,6 +53,11 @@ public class SimpleSubscription<E> implements Subscription<E> {
         this.handler = handler;
     }
 
+    /**
+     * Called when this event is posted.
+     *
+     * @param event the event ({@link E}) to be handled.
+     */
     public void on(@NonNull E event) throws Throwable {
         try {
             this.handler.handle(event);
@@ -61,11 +66,20 @@ public class SimpleSubscription<E> implements Subscription<E> {
         }
     }
 
+    /**
+     * Returns if this can be cancelled.
+     *
+     * @return a boolean value.
+     */
     @Override
     public boolean acceptsCancelled() {
         return this.acceptsCancelled;
     }
 
+
+    /**
+     * Unsubscribe from the event bus.
+     */
     public void unsubscribe() {
         this.bus.unregister(this);
     }

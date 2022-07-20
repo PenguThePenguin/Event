@@ -40,6 +40,7 @@ class EventBusTest {
         EventBus<TestEvent> bus = EventBus.of(TestEvent.class);
         assertNull(bus.getSubscriptions(TestEvent.class));
 
+
         Subscription<TestEvent> subscription = bus.register(TestEvent.class, (EventHandler<TestEvent>) event -> event.count++);
         assertTrue(bus.isSubscribed(TestEvent.class));
 
@@ -55,9 +56,9 @@ class EventBusTest {
     }
 
     @Test
-    void testMethodSubscribers() {
+    void testMethodSubscriber() {
         EventBus<TestEvent> bus = EventBus.of(TestEvent.class);
-        assertNull(bus.getSubscriptions(TestEvent.class));
+        assertFalse(bus.isSubscribed(TestEvent.class));
 
         bus.register(new TestSubscriber());
         assertTrue(bus.isSubscribed(TestEvent.class));

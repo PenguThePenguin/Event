@@ -32,22 +32,53 @@ import java.util.Map;
 
 public interface PostResult<E> {
 
+    /**
+     * Creates a post result based off no thrown exceptions.
+     *
+     * @param event the event that was posted.
+     * @return the {@link PostResult} result.
+     */
     static <E> @NonNull PostResult<E> of(@NonNull E event) {
         return new SimplePostResult<>(event, Collections.emptyMap());
     }
 
+    /**
+     * Creates a post result with thrown exceptions.
+     *
+     * @param event the event that was posted.
+     * @param exceptions any exceptions thrown when the event was posted.
+     * @return the {@link PostResult} result.
+     */
     static <E> @NonNull PostResult<E> of(@NonNull E event, @NonNull Map<Subscription<? super E>, Throwable> exceptions) {
         return new SimplePostResult<>(event, exceptions);
     }
 
+    /**
+     * Gets the event that was passed when posting.
+     *
+     * @return The event ({@link E}) that was posted.
+     */
     @NonNull E getEvent();
 
+    /**
+     * Gets a map of all the subscriptions that have failed, and the exception that caused the failure.
+     *
+     * @return A {@link Map} of {@link Subscription}'s and {@link Throwable}'s
+     */
     @NonNull Map<Subscription<? super E>, Throwable> getExceptions();
 
+    /**
+     * Returns if this post was successful.
+     *
+     * @return {@code true} if there aren't any exceptions that where caught during posting.
+     */
     default boolean wasSuccessful() {
         return this.getExceptions().isEmpty();
     }
 
+    /**
+     * If the post was not successful, this will throw a {@link CompositeException}
+     */
     default void raise() throws Exception {
         if (!this.wasSuccessful()) {
             throw new CompositeException(this);

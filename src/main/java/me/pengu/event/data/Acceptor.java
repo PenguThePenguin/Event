@@ -29,12 +29,25 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 public interface Acceptor<E> {
 
+    /**
+     * Only cancels the event if it is accepting cancelled.
+     *
+     * @return boolean of whether the event should be handled.
+     */
     static <E> @NonNull Acceptor<E> nonCancelWhenNonAcceptingCancelled() {
         return (eventType, event, subscription) -> !subscription.acceptsCancelled()
                 || !(event instanceof Cancellable)
                 || !((Cancellable) event).isCancelled();
     }
 
+    /**
+     * Returns if the event should be handled by its registered subscription.
+     *
+     * @param eventType the type of event that the subscription is interested in.
+     * @param event the event that was published.
+     * @param subscription the subscription that is being checked.
+     * @return boolean of whether the event should be handled.
+     */
     boolean accepts(@NonNull Class<E> eventType, @NonNull E event, @NonNull Subscription<? super E> subscription);
 
 }

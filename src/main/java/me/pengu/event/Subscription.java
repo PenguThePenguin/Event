@@ -35,20 +35,54 @@ public interface Subscription<E> {
 
     Comparator<Subscription<?>> SUBSCRIPTION_COMPARATOR = Comparator.comparingInt(Subscription::getOrder);
 
+    /**
+     * Creates a subscription based off a method
+     *
+     * @param order the order in which the subscription should be handled.
+     * @param bus the {@link EventBus} instance that the {@link Subscription} will be registered to.
+     * @param eventClass the class of the event that this subscription is subscribing to.
+     * @param target the object that contains the method to be called.
+     * @param method the method to be invoked when the event is posted.
+     * @return a subscription based off provided data.
+     */
     static <E> @NonNull Subscription<E> of(int order, @NonNull EventBus<E> bus, @NonNull Class<? extends E> eventClass, @NonNull Object target, @NonNull Method method) {
         return new SimpleSubscription<>(order, bus, eventClass, target, method);
     }
 
+    /**
+     * Create a subscription based off an event handler.
+     *
+     * @param order the order in which the subscription should be handled.
+     * @param bus the {@link EventBus} instance that the {@link Subscription} will be registered to.
+     * @param eventClass the class of the event that this subscription is subscribing to.
+     * @param handler the event handler that will be called when the event is fired.
+     * @return a subscription based off provided data.
+     */
     static <E> @NonNull Subscription<E> of(int order, @NonNull EventBus<E> bus, @NonNull Class<? extends E> eventClass, @NonNull EventHandler<? super E> handler) {
         return new SimpleSubscription<>(order, bus, eventClass, handler);
     }
 
+    /**
+     * Called when this event is posted.
+     *
+     * @param event the event ({@link E}) to be handled.
+     */
     void on(@NonNull E event) throws Throwable;
 
+    /**
+     * The order in which this will be posted
+     *
+     * @return the order as an integer.
+     */
     default int getOrder() {
         return PostOrder.NORMAL;
     }
 
+    /**
+     * Returns if this can be cancelled.
+     *
+     * @return a boolean value.
+     */
     default boolean acceptsCancelled() {
         return true;
     }

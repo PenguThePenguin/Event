@@ -26,14 +26,30 @@ package me.pengu.event.data;
 
 public interface PostOrder {
 
+
+    /**
+     * Marks that the subscription should handle the event before all other subscriptions.
+     */
     int FIRST = -100;
 
+    /**
+     * Marks that the subscription should handle the event before {@link #NORMAL} subscriptions.
+     */
     int EARLY = -50;
 
+    /**
+     * Marks that the subscription has no special priority over others.
+     */
     int NORMAL = 0;
 
+    /**
+     * Marks that the subscription should handle the event after {@link #NORMAL} subscriptions.
+     */
     int LATE = 50;
 
+    /**
+     * Marks the subscription should be called last, after all other subscriptions.
+     */
     int LAST = 100;
 
 }

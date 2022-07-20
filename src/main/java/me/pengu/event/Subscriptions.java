@@ -32,16 +32,44 @@ import java.util.function.Predicate;
 
 public interface Subscriptions<E> {
 
+    /**
+     * Geta all subscriptions, by their priority.
+     *
+     * @return a {@link Map} of subscriptions.
+     */
     @NonNull Map<Integer, List<Subscription<E>>> getSubscriptions();
 
+    /**
+     * Gets all registered subscriptions in an array for quick iteration.
+     *
+     * @return an array of subscriptions.
+     */
     @NonNull Subscription<E>[] getRegisteredSubscriptions();
 
+    /**
+     * Refresh currently registered subscriptions
+     */
     void refreshSubscriptions();
 
+    /**
+     * Register a subscription to this event type.
+     *
+     * @param subscription the subscription to register.
+     */
     void register(Subscription<E> subscription);
 
+    /**
+     * Unregister a subscription from this event type.
+     *
+     * @param subscription the subscription to unregister.
+     */
     void unregister(Subscription<E> subscription);
 
+    /**
+     * Unregister all subscriptions that match the given predicate
+     *
+     * @param predicate a predicate to check the subscription should be unregistered.
+     */
     void unregisterIf(@NonNull Predicate<? super Subscription<E>> predicate);
 
 }
