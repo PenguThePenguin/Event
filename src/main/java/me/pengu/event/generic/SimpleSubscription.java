@@ -40,17 +40,18 @@ public class SimpleSubscription<E> implements Subscription<E> {
     private final Class<? extends E> eventClass;
     private final EventHandler<? super E> handler;
 
-    private final boolean acceptsCancelled = true;
+    private final boolean acceptsCancelled;
 
-    public SimpleSubscription(int order, EventBus<E> bus, Class<? extends E> eventClass, Object target, Method method) {
-        this(order, bus, eventClass, event -> method.invoke(target, event));
+    public SimpleSubscription(int order, EventBus<E> bus, Class<? extends E> eventClass, Object target, Method method, boolean acceptsCancelled) {
+        this(order, bus, eventClass, event -> method.invoke(target, event), acceptsCancelled);
     }
 
-    public SimpleSubscription(int order, EventBus<E> bus, Class<? extends E> eventClass, EventHandler<? super E> handler) {
+    public SimpleSubscription(int order, EventBus<E> bus, Class<? extends E> eventClass, EventHandler<? super E> handler, boolean acceptsCancelled) {
         this.order = order;
         this.bus = bus;
         this.eventClass = eventClass;
         this.handler = handler;
+        this.acceptsCancelled = acceptsCancelled;
     }
 
     /**

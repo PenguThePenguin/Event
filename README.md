@@ -51,7 +51,7 @@ bus.register(new ExampleSubscriber());
 public static class ExampleSubscriber {
 
 	@Subscribe(order = 1)
-	private void onTestEvent(TestEvent event) {
+	private void onExampleEvent(ExampleEvent event) {
 		System.out.println("Hey!");
 	}
 }

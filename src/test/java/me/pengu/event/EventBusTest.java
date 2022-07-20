@@ -40,7 +40,6 @@ class EventBusTest {
         EventBus<TestEvent> bus = EventBus.of(TestEvent.class);
         assertNull(bus.getSubscriptions(TestEvent.class));
 
-
         Subscription<TestEvent> subscription = bus.register(TestEvent.class, (EventHandler<TestEvent>) event -> event.count++);
         assertTrue(bus.isSubscribed(TestEvent.class));
 
@@ -65,7 +64,7 @@ class EventBusTest {
 
         TestEvent testEvent = new TestEvent();
         bus.post(testEvent).thenAccept(result -> assertTrue(result.wasSuccessful()));
-        assertEquals(1, testEvent.count);
+        assertEquals(2, testEvent.count);
     }
 
     @Test
@@ -102,6 +101,11 @@ class EventBusTest {
 
         @Subscribe(order = 1)
         private void onTestEvent(TestEvent event) {
+            event.count++;
+        }
+
+        @Subscribe(order = 2, acceptsCancelled = false)
+        private void onTestEventNonCancellable(TestEvent event) {
             event.count++;
         }
 

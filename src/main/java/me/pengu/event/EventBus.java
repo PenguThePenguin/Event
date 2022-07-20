@@ -88,7 +88,19 @@ public interface EventBus<E> extends AutoCloseable {
      * @return the subscription that was generated.
      */
     default @NonNull Subscription<E> register(@NonNull Class<? extends E> eventType, @NonNull EventHandler<? super E> handler) {
-        return this.register(eventType, handler, PostOrder.NORMAL);
+        return this.register(eventType, handler, false);
+    }
+
+    /**
+     * Registers an event handler for the given event type and if it accepts cancelled.
+     *
+     * @param eventType the type of event to subscribe to.
+     * @param handler the event handler to register.
+     * @param acceptsCancelled weather this handler should accept cancelled events.
+     * @return the subscription that was generated.
+     */
+    default @NonNull Subscription<E> register(@NonNull Class<? extends E> eventType, @NonNull EventHandler<? super E> handler, boolean acceptsCancelled) {
+        return this.register(eventType, handler, PostOrder.NORMAL, acceptsCancelled);
     }
 
     /**
@@ -99,7 +111,20 @@ public interface EventBus<E> extends AutoCloseable {
      * @param order the order in which the handler should be called.
      * @return the subscription that was generated.
      */
-    @NonNull Subscription<E> register(@NonNull Class<? extends E> eventType, @NonNull EventHandler<? super E> handler, int order);
+    default @NonNull Subscription<E> register(@NonNull Class<? extends E> eventType, @NonNull EventHandler<? super E> handler, int order) {
+        return this.register(eventType, handler, order, false);
+    }
+
+    /**
+     * Registers an event handler with a given post order and if it accepts cancelled.
+     *
+     * @param eventType the type of event to subscribe to.
+     * @param handler the handler to be registered.
+     * @param order the order in which the handler should be called.
+     * @param acceptsCancelled weather this handler should accept cancelled events.
+     * @return the subscription that was generated.
+     */
+    @NonNull Subscription<E> register(@NonNull Class<? extends E> eventType, @NonNull EventHandler<? super E> handler, int order, boolean acceptsCancelled);
 
     /**
      * Register a subscription for a specific event type.

@@ -40,10 +40,17 @@ import java.lang.annotation.Target;
 public @interface Subscribe {
 
     /**
-     * The subscriptions order.
+     * The order this subscriber is posted.
      *
      * @return the order in which this will be handled.
      */
     int order() default PostOrder.NORMAL;
+
+    /**
+     * Returns if this can be cancelled.
+     *
+     * @return a boolean value.
+     */
+    boolean acceptsCancelled() default true;
 
 }

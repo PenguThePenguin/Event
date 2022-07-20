@@ -34,7 +34,7 @@ public interface Acceptor<E> {
      *
      * @return boolean of whether the event should be handled.
      */
-    static <E> @NonNull Acceptor<E> nonCancelWhenNonAcceptingCancelled() {
+    static <E> @NonNull Acceptor<E> nonCancelingWhenNotAcceptingCancelled() {
         return (eventType, event, subscription) -> !subscription.acceptsCancelled()
                 || !(event instanceof Cancellable)
                 || !((Cancellable) event).isCancelled();

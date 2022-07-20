@@ -45,8 +45,8 @@ public interface Subscription<E> {
      * @param method the method to be invoked when the event is posted.
      * @return a subscription based off provided data.
      */
-    static <E> @NonNull Subscription<E> of(int order, @NonNull EventBus<E> bus, @NonNull Class<? extends E> eventClass, @NonNull Object target, @NonNull Method method) {
-        return new SimpleSubscription<>(order, bus, eventClass, target, method);
+    static <E> @NonNull Subscription<E> of(int order, @NonNull EventBus<E> bus, @NonNull Class<? extends E> eventClass, @NonNull Object target, @NonNull Method method, boolean acceptsCancelled) {
+        return new SimpleSubscription<>(order, bus, eventClass, target, method, acceptsCancelled);
     }
 
     /**
@@ -58,8 +58,8 @@ public interface Subscription<E> {
      * @param handler the event handler that will be called when the event is fired.
      * @return a subscription based off provided data.
      */
-    static <E> @NonNull Subscription<E> of(int order, @NonNull EventBus<E> bus, @NonNull Class<? extends E> eventClass, @NonNull EventHandler<? super E> handler) {
-        return new SimpleSubscription<>(order, bus, eventClass, handler);
+    static <E> @NonNull Subscription<E> of(int order, @NonNull EventBus<E> bus, @NonNull Class<? extends E> eventClass, @NonNull EventHandler<? super E> handler, boolean acceptsCancelled) {
+        return new SimpleSubscription<>(order, bus, eventClass, handler, acceptsCancelled);
     }
 
     /**

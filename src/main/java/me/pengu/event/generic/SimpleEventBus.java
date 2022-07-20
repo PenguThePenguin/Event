@@ -49,7 +49,7 @@ public class SimpleEventBus<E> implements EventBus<E> {
     private final Map<Class<? extends E>, Subscriptions<E>> subscriptions;
 
     public SimpleEventBus(Class<E> eventType) {
-        this(eventType, Acceptor.nonCancelWhenNonAcceptingCancelled());
+        this(eventType, Acceptor.nonCancelingWhenNotAcceptingCancelled());
     }
 
     public SimpleEventBus(Class<E> eventType, Acceptor<E> acceptor) {
@@ -89,7 +89,7 @@ public class SimpleEventBus<E> implements EventBus<E> {
                 Subscribe subscribe = method.getAnnotation(Subscribe.class);
 
                 subscriptions.add(
-                        new SimpleSubscription<>(subscribe.order(), this, event, subscriber, method)
+                        new SimpleSubscription<>(subscribe.order(), this, event, subscriber, method, subscribe.acceptsCancelled())
                 );
             }
         }
@@ -105,11 +105,12 @@ public class SimpleEventBus<E> implements EventBus<E> {
      * @param eventType the type of event to subscribe to.
      * @param handler   the handler to be registered.
      * @param order     the order in which the handler should be called.
+     * @param acceptsCancelled weather this handler should accept cancelled events.
      * @return the subscription that was generated.
      */
     @Override
-    public @NonNull SimpleSubscription<E> register(@NonNull Class<? extends E> eventType, @NonNull EventHandler<? super E> handler, int order) {
-        SimpleSubscription<E> subscription = new SimpleSubscription<>(order, this, eventType, handler);
+    public @NonNull SimpleSubscription<E> register(@NonNull Class<? extends E> eventType, @NonNull EventHandler<? super E> handler, int order, boolean acceptsCancelled) {
+        SimpleSubscription<E> subscription = new SimpleSubscription<>(order, this, eventType, handler, acceptsCancelled);
         this.register(eventType, subscription);
 
         return subscription;
