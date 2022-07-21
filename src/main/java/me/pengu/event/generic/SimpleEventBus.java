@@ -67,7 +67,7 @@ public class SimpleEventBus<E> implements EventBus<E> {
     @Override
     public void register(@NonNull Class<?> subscriber) {
         for (Method method : subscriber.getMethods()) {
-            SimpleSubscription<E> subscription = this.generateSubscription(method, subscriber);
+            SimpleSubscription<E> subscription = this.generateSubscription(method, null);
 
             if (subscription != null) {
                 this.register(subscription.getEventClass(), subscription);
@@ -104,7 +104,8 @@ public class SimpleEventBus<E> implements EventBus<E> {
      */
     public SimpleSubscription<E> generateSubscription(Method method, Object target) {
         method.setAccessible(true);
-        if (!method.isAnnotationPresent(Subscribe.class)) return null;
+        if (!method.isAnnotationPresent(Subscribe.class)
+                || target == null != Modifier.isStatic(method.getModifiers())) return null;
 
         Class<?>[] parameters = method.getParameterTypes();
         Preconditions.checkArgument(parameters.length == 1,
