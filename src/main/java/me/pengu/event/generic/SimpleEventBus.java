@@ -120,8 +120,7 @@ public class SimpleEventBus<E> implements EventBus<E> {
         Subscribe subscribe = method.getAnnotation(Subscribe.class);
 
         return new SimpleSubscription<>(
-                subscribe.order(), this, event, Modifier.isStatic(method.getModifiers())
-                ? null : target, method, subscribe.acceptsCancelled()
+                subscribe.order(), this, event, target, method, subscribe.acceptsCancelled()
         );
     }
 
