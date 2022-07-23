@@ -38,11 +38,12 @@ import java.util.function.Predicate;
 
 public class SimpleSubscriptions<E> implements Subscriptions<E> {
 
-    private Subscription<E>[] registeredSubscriptions = null;
     private final Map<Integer, List<Subscription<E>>> subscriptions;
+    private Subscription<E>[] subscriptionsArray;
 
     public SimpleSubscriptions() {
         this.subscriptions = Maps.newConcurrentMap();
+        this.bake();
     }
 
     /**
@@ -62,26 +63,21 @@ public class SimpleSubscriptions<E> implements Subscriptions<E> {
      */
     @Override
     public @NonNull Subscription<E>[] getRegisteredSubscriptions() {
-        Subscription<E>[] subscriptions;
-        while((subscriptions = this.registeredSubscriptions) == null) {
-            this.refreshSubscriptions();
-        }
-
-        return subscriptions;
+        return this.subscriptionsArray;
     }
 
     /**
      * Refresh currently registered subscriptions
      */
     @SuppressWarnings({"unchecked"})
-    public synchronized void refreshSubscriptions() {
+    public synchronized void bake() {
         List<Subscription<E>> entries = new ArrayList<>();
         for (Entry<Integer, List<Subscription<E>>> entry : this.subscriptions.entrySet()) {
             entries.addAll(entry.getValue());
         }
 
         entries.sort(Subscription.SUBSCRIPTION_COMPARATOR);
-        this.registeredSubscriptions = entries.toArray(new Subscription[0]);
+        this.subscriptionsArray = entries.toArray(new Subscription[0]);
     }
 
     /**
@@ -92,7 +88,7 @@ public class SimpleSubscriptions<E> implements Subscriptions<E> {
     @Override
     public synchronized void register(Subscription<E> subscription) {
         this.subscriptions.computeIfAbsent(subscription.getOrder(), integer -> new ArrayList<>()).add(subscription);
-        this.refreshSubscriptions();
+        this.bake();
     }
 
     /**
@@ -124,7 +120,7 @@ public class SimpleSubscriptions<E> implements Subscriptions<E> {
         }
 
         if (changed) {
-            this.refreshSubscriptions();
+            this.bake();
         }
     }
 

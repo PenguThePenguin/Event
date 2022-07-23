@@ -47,9 +47,9 @@ public interface Subscriptions<E> {
     @NonNull Subscription<E>[] getRegisteredSubscriptions();
 
     /**
-     * Refresh currently registered subscriptions
+     * Bakes currently registered subscriptions
      */
-    void refreshSubscriptions();
+    void bake();
 
     /**
      * Register a subscription to this event type.

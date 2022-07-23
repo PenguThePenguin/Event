@@ -47,10 +47,10 @@ public @interface Subscribe {
     int order() default PostOrder.NORMAL;
 
     /**
-     * Returns if this can be cancelled.
+     * Returns if this will ignore cancelled events.
      *
      * @return a boolean value.
      */
-    boolean acceptsCancelled() default true;
+    boolean ignoreCancelled() default false;
 
 }

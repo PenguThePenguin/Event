@@ -120,7 +120,7 @@ public class SimpleEventBus<E> implements EventBus<E> {
         Subscribe subscribe = method.getAnnotation(Subscribe.class);
 
         return new SimpleSubscription<>(
-                subscribe.order(), this, event, target, method, subscribe.acceptsCancelled()
+                subscribe.order(), this, event, target, method, !subscribe.ignoreCancelled()
         );
     }
 
@@ -130,12 +130,12 @@ public class SimpleEventBus<E> implements EventBus<E> {
      * @param eventType the type of event to subscribe to.
      * @param handler   the handler to be registered.
      * @param order     the order in which the handler should be called.
-     * @param acceptsCancelled weather this handler should accept cancelled events.
+     * @param ignoreCancelled weather this handler should ignore cancelled events.
      * @return the subscription that was generated.
      */
     @Override
-    public @NonNull SimpleSubscription<E> register(@NonNull Class<? extends E> eventType, @NonNull EventHandler<? super E> handler, int order, boolean acceptsCancelled) {
-        SimpleSubscription<E> subscription = new SimpleSubscription<>(order, this, eventType, handler, acceptsCancelled);
+    public @NonNull SimpleSubscription<E> register(@NonNull Class<? extends E> eventType, @NonNull EventHandler<? super E> handler, int order, boolean ignoreCancelled) {
+        SimpleSubscription<E> subscription = new SimpleSubscription<>(order, this, eventType, handler, !ignoreCancelled);
         this.register(eventType, subscription);
 
         return subscription;
@@ -222,18 +222,6 @@ public class SimpleEventBus<E> implements EventBus<E> {
     }
 
     /**
-     * Gets an {@link Array} of all registered {@link Subscription}'s based on its event type.
-     *
-     * @param eventType the type of event.
-     * @return All registered subscriptions.
-     */
-    @Override
-    public @Nullable Subscription<? super E>[] getSubscriptions(@NonNull Class<?> eventType) {
-        Subscriptions<E> subscriptions = this.subscriptions.get(eventType);
-        return subscriptions == null ? null : subscriptions.getRegisteredSubscriptions();
-    }
-
-    /**
      * Returns if the given event type is currently subscribed to.
      *
      * @param eventType The type of event you want to check is subscribed.
@@ -243,6 +231,18 @@ public class SimpleEventBus<E> implements EventBus<E> {
     public boolean isSubscribed(@NonNull Class<?> eventType) {
         Subscription<? super E>[] subscriptions = this.getSubscriptions(eventType);
         return subscriptions != null && subscriptions.length != 0;
+    }
+
+    /**
+     * Gets an {@link Array} of all registered {@link Subscription}'s based on its event type.
+     *
+     * @param eventType the type of event.
+     * @return All registered subscriptions.
+     */
+    @Override
+    public @Nullable Subscription<? super E>[] getSubscriptions(@NonNull Class<?> eventType) {
+        Subscriptions<E> subscriptions = this.subscriptions.get(eventType);
+        return subscriptions == null ? null : subscriptions.getRegisteredSubscriptions();
     }
 
 }

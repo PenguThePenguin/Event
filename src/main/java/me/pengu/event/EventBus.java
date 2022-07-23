@@ -103,11 +103,11 @@ public interface EventBus<E> extends AutoCloseable {
      *
      * @param eventType the type of event to subscribe to.
      * @param handler the event handler to register.
-     * @param acceptsCancelled weather this handler should accept cancelled events.
+     * @param ignoreCancelled weather this handler should ignore cancelled events.
      * @return the subscription that was generated.
      */
-    default @NonNull Subscription<E> register(@NonNull Class<? extends E> eventType, @NonNull EventHandler<? super E> handler, boolean acceptsCancelled) {
-        return this.register(eventType, handler, PostOrder.NORMAL, acceptsCancelled);
+    default @NonNull Subscription<E> register(@NonNull Class<? extends E> eventType, @NonNull EventHandler<? super E> handler, boolean ignoreCancelled) {
+        return this.register(eventType, handler, PostOrder.NORMAL, ignoreCancelled);
     }
 
     /**
@@ -128,10 +128,10 @@ public interface EventBus<E> extends AutoCloseable {
      * @param eventType the type of event to subscribe to.
      * @param handler the handler to be registered.
      * @param order the order in which the handler should be called.
-     * @param acceptsCancelled weather this handler should accept cancelled events.
+     * @param ignoreCancelled weather this handler should ignore cancelled events.
      * @return the subscription that was generated.
      */
-    @NonNull Subscription<E> register(@NonNull Class<? extends E> eventType, @NonNull EventHandler<? super E> handler, int order, boolean acceptsCancelled);
+    @NonNull Subscription<E> register(@NonNull Class<? extends E> eventType, @NonNull EventHandler<? super E> handler, int order, boolean ignoreCancelled);
 
     /**
      * Register a subscription for a specific event type.
@@ -169,20 +169,20 @@ public interface EventBus<E> extends AutoCloseable {
     void unregisterAll();
 
     /**
-     * Gets an {@link Array} of all registered {@link Subscription}'s based on its event type.
-     *
-     * @param eventType the type of event.
-     * @return All registered subscriptions.
-     */
-    @Nullable Subscription<? super E>[] getSubscriptions(@NonNull Class<?> eventType);
-
-    /**
      * Returns if the given event type is currently subscribed to.
      *
      * @param eventType The type of event you want to check is subscribed.
      * @return if the event is subscribed.
      */
     boolean isSubscribed(@NonNull Class<?> eventType);
+
+    /**
+     * Gets an {@link Array} of all registered {@link Subscription}'s based on its event type.
+     *
+     * @param eventType the type of event.
+     * @return All registered subscriptions.
+     */
+    @Nullable Subscription<? super E>[] getSubscriptions(@NonNull Class<?> eventType);
 
     /**
      * Cleans up this bus instance.

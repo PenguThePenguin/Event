@@ -26,6 +26,7 @@ package me.pengu.event;
 
 import me.pengu.event.data.Cancellable;
 import me.pengu.event.data.Subscribe;
+import me.pengu.event.generic.AbstractCancellable;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.junit.jupiter.api.Test;
 
@@ -89,10 +90,9 @@ class EventBusTest {
         assertEquals(1, testEvent.count);
     }
 
-    public static class TestEvent implements Cancellable {
+    public static class TestEvent extends AbstractCancellable {
 
         public int count;
-        private final AtomicBoolean cancellationState = new AtomicBoolean(false);
 
         @Override
         public @NonNull AtomicBoolean getCancellationState() {
@@ -108,7 +108,7 @@ class EventBusTest {
             event.count++;
         }
 
-        @Subscribe(order = 2, acceptsCancelled = false)
+        @Subscribe(order = 2, ignoresCancelled = true)
         private void onTestEventNonCancellable(TestEvent event) {
             event.count++;
         }
