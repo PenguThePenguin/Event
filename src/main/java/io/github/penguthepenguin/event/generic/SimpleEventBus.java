@@ -30,7 +30,6 @@ import com.google.common.collect.Maps;
 import io.github.penguthepenguin.event.*;
 import io.github.penguthepenguin.event.data.Subscribe;
 import lombok.Getter;
-import me.pengu.event.*;
 import io.github.penguthepenguin.event.data.Acceptor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
