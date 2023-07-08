@@ -33,6 +33,8 @@ import java.util.Map;
 @Getter
 public class SimplePostResult<E> implements PostResult<E> {
 
+    public static final PostResult<?> FAIL = new SimplePostResult<>(null, null);
+
     private final E event;
     private final Map<Subscription<? super E>, Throwable> exceptions;
 

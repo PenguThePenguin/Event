@@ -107,7 +107,7 @@ class EventBusTest {
             event.count++;
         }
 
-        @Subscribe(order = 2, ignoresCancelled = true)
+        @Subscribe(order = 2, ignoreCancelled = true)
         private void onTestEventNonCancellable(TestEvent event) {
             event.count++;
         }
